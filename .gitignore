@@ -1,0 +1,11 @@
+# code generated files
+parking_db/*
+*.log
+
+# vscode stuff
+.vscode/launch.json
+.vscode/settings.json
+
+# other
+# other files
+*cpython*
