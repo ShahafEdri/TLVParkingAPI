@@ -11,101 +11,109 @@ class DBHandler:
     def __init__(self):
         # set logger
         self.cls_logger = Logger(__name__)
+        # TODO move to utils
+        _cls_file = 'parking_info.csv'
+        self.prk_info_path = CLS_ROOT + _cls_file
+        self.info_db_headers = ['parking_id', 'name_hebrew', 'name_english', 'address_hebrew', 'address_english', 'geo_lat', 'geo_lng']
 
-        self.cldf = dict()
-        '''cldf (aka class_garages_dataframes) is a dictionary of dataframes, key: parking space id, value: df, sorted by timestamp'''
-
-        cls_file = 'parking.csv'
-        self.cls_path = CLS_ROOT + cls_file
         try:
-            temp_df = pd.read_csv(self.cls_path)
-            temp_df.set_index('parking_space_id', inplace=True)
+            temp_df = pd.read_csv(self.prk_info_path)
+            temp_df.set_index('parking_id', inplace=True)
             # trasform index to int
             temp_df.index = temp_df.index.astype(int)
             # sort by address engilsh
             temp_df.sort_index(inplace=True)
 
         except:
-            temp_df = pd.DataFrame(columns=['parking_space_id', 'name_hebrew', 'name_english',
-                                   'address_hebrew', 'address_english', 'geo_lat', 'geo_lng'])
-            temp_df.to_csv(self.cls_path, index=True)
-        self.cls_df = temp_df
+            temp_df = pd.DataFrame(columns=self.info_db_headers)
+            temp_df.set_index('parking_id', inplace=True)
+            temp_df.to_csv(self.prk_info_path, index=True)
+        self.prk_info_df = temp_df
 
-        # open dictionary to store db of each parking space by id
-        self.tonnage_headers = ['timestamp', 'parking_tonnage']
-        for id in self.cls_df.index:
-            cls_garage_file = self.get_parking_csv_path(id)
-            # try to read csv if not, create new one
-            try:
-                temp_df = pd.read_csv(cls_garage_file)
-                temp_df.set_index('timestamp', inplace=True)
-                # sort df by timestamp in ascending order (oldest first)
-                temp_df.sort_index(inplace=True)
-            except (FileNotFoundError, EmptyDataError):
-                temp_df = pd.DataFrame(columns=tonnage_headers)
-                temp_df.set_index('timestamp', inplace=True)
-                temp_df.to_csv(cls_garage_file, index=True)
-            self.cldf[id] = temp_df
+        # TODO move to utils
+        _cls_file = 'parking_tonnage.csv'
+        self.prk_tnng_path = CLS_ROOT + _cls_file
+        self.tonnage_headers = ['timestamp', 'parking_id', 'tonnage']
+        # try to read csv if not, create new one
+        try:
+            temp_df = pd.read_csv(self.prk_tnng_path)
+            temp_df.set_index('timestamp', inplace=True)
+            # sort df by timestamp in ascending order (oldest first)
+            temp_df.sort_index(inplace=True)
+        except (FileNotFoundError, EmptyDataError):
+            temp_df = pd.DataFrame(columns=self.tonnage_headers)
+            temp_df.set_index('timestamp', inplace=True)
+            temp_df.to_csv(self.prk_tnng_path, index=True)
+        self.prk_tnng_db = temp_df
+        # add group by parking space id
+        self.prk_tnng_db_by_id = self.prk_tnng_db.groupby(self.tonnage_headers[1])
 
-    @staticmethod
-    def get_parking_csv_path(id):
-        name_prefix = 'parking_garage_'
-        file_type = '.csv'
-        cls_garage_file = CLS_ROOT + name_prefix + str(id) + file_type
-        return cls_garage_file
-
-    def update_parking_tonnage(self, parking_space_id: int, parking_tonnage: str, rewrite_db: bool = False):
-        '''Add parking tonnage to db'''
-        # get current timestamp
-        timestamp = pd.Timestamp.now()
-        # create new dataframe with timestamp and parking tonnage
-        temp_df = pd.DataFrame(data=[[timestamp, parking_tonnage]], columns=self.tonnage_headers) 
+    def add_new_parking_tonnage(self, parking_id: int, tonnage: str):
+        '''Add new parking tonnage to db'''
+        # get current timestamp with format '%Y-%m-%d %H:%M:%S'
+        timestamp = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+        # create new dataframe with parking space id, parking tonnage and timestamp
+        temp_df = pd.DataFrame([[timestamp, parking_id, tonnage]], columns=self.tonnage_headers)
+        # set index to timestamp
         temp_df.set_index(self.tonnage_headers[0], inplace=True)
-        # save to csv without header
-        self.cldf[parking_space_id].to_csv(self.get_parking_csv_path(parking_space_id), mode='a', index=True, header=False)
-        # add new row to df
-        self.cldf[parking_space_id].loc[timestamp] = parking_tonnage
+        # concatenate with current db and sort by timestamp
+        self.prk_tnng_db = pd.concat([self.prk_tnng_db, temp_df])
+        # sort by timestamp
+        self.prk_tnng_db.sort_index(inplace=True)
         # rewrite df to csv
-        if rewrite_db:
-            self.cldf[parking_space_id].to_csv(self.get_parking_csv_path(parking_space_id), index=True)
+        self.prk_tnng_db.to_csv(self.prk_tnng_path, index=True)
 
-    def get_last_parking_tonnage(self, parking_space_id):
+    def update_parking_tonnage_by_dict(self, parking_tonnage_dict, rewrite_db: bool = True):
+        '''Add parking tonnage to db'''
+        pass
+
+    def get_last_parking_tonnage(self, parking_id):
         '''Get latest parking tonnage from db'''
-        return self.cldf[parking_space_id].iloc[-1]['parking_tonnage']
+        # get last tonnage in db for parking space id
+        return self.prk_tnng_db_by_id.get_group(parking_id).iloc[-1]['tonnage']
 
-    def get_parking_tonnage_at_timestamp(self, parking_space_id, timestamp):
+    def get_parking_tonnage_at_timestamp(self, parking_id, timestamp):
         '''Get parking tonnage for a specific timestamp'''
-        return self.cldf[parking_space_id].loc[self.cldf[parking_space_id]['timestamp'] == timestamp]['parking_tonnage'].values[0]
+        # get tonnage for parking space id and timestamp
+        return self.prk_tnng_db_by_id.get_group(parking_id).loc[timestamp]['tonnage']
 
-    def get_parking_tonnage_between_timestamps(self, parking_space_id, timestamp_start, timestamp_end):
+    def get_parking_tonnage_between_timestamps(self, parking_id, timestamp_start, timestamp_end):
         '''Get parking tonnage for a specific timestamp'''
-        return self.cldf[parking_space_id].loc[(self.cldf[parking_space_id]['timestamp'] >= timestamp_start) &
-                                               (self.cldf[parking_space_id]['timestamp'] <= timestamp_end)]['parking_tonnage'].values
+        # get tonnage for parking space id between timestamp start and timestamp end
+        return self.prk_tnng_db_by_id.get_group(parking_id).loc[timestamp_start:timestamp_end]['tonnage']
 
-    def get_parking_tonnage_for_day(self, parking_space_id, day):
+    def get_parking_tonnage_for_day(self, parking_id, day):
         '''Get parking tonnage for a specific day'''
-        return self.cldf[parking_space_id].loc[self.cldf[parking_space_id]['timestamp'].dt.day == day]['parking_tonnage'].values
+        # get tonnage for parking space id and day
+        return self.prk_tnng_db_by_id.get_group(parking_id).loc[day]['tonnage']
 
-    def get_parking_tonnage_for_month(self, parking_space_id, month):
+    def get_parking_tonnage_for_month(self, parking_id, month):
         '''Get parking tonnage for a specific month'''
-        return self.cldf[parking_space_id].loc[self.cldf[parking_space_id]['timestamp'].dt.month == month]['parking_tonnage'].values
+        # get tonnage for parking space id and month
+        return self.prk_tnng_db_by_id.get_group(parking_id).loc[month]['tonnage']
 
-    def get_parking_tonnage_up_to_timestamp(self, parking_space_id, timestamp):
+    def get_parking_tonnage_from_timestamp_to_now(self, parking_id, timestamp):
         '''Get parking tonnage for a specific timestamp'''
-        return self.cldf[parking_space_id].loc[self.cldf[parking_space_id]['timestamp'] <= timestamp]['parking_tonnage'].values
+        # get tonnage for parking space id up to timestamp
+        return self.prk_tnng_db_by_id.get_group(parking_id).loc[timestamp:]['tonnage']
 
-    def get_parking_tonnage_by_count(self, parking_space_id, count):
-        '''Get parking tonnage for a specific count'''
-        return self.cldf[parking_space_id].iloc[-count:]['parking_tonnage'].values
+    def get_parking_tonnage_up_to_count(self, parking_id, count):
+        '''Get parking tonnage up to specific count'''
+        # get tonnage for parking space id up to count
+        return self.prk_tnng_db_by_id.get_group(parking_id).iloc[-count:]['tonnage']
 
-    def delete_parking_tonnage_timestamp(self, parking_space_id, timestamp):
+    def delete_parking_tonnage_timestamp(self, parking_id, timestamp):
         '''Delete parking tonnage for a specific timestamp'''
-        self.cldf[parking_space_id].drop(self.cldf[parking_space_id][self.cldf[parking_space_id]['timestamp'] == timestamp].index, inplace=True)
-        self.cldf[parking_space_id].to_csv(self.get_parking_csv_path(parking_space_id), index=True)
+        # delete parking tonnage for parking space id and timestamp
+        self.prk_tnng_db_by_id.get_group(parking_id).drop(timestamp, inplace=True)
+        # rewrite df to csv
+        self.prk_tnng_db.to_csv(self.prk_tnng_path, index=True)
+        
 
-    def get_parking_space_ids(self) -> list:
+    def get_parking_ids(self) -> list:
         '''Get all parking space ids'''
-        return self.cls_df.index.values
+        # get all parking space ids
+        return self.prk_info_df.index.tolist()
 
     def update_all_parking_space_information(self, parking_space_by_id_dict: dict):
         '''Update all parking space information'''
@@ -113,24 +121,19 @@ class DBHandler:
         # dict to dataframe with parking space id as index
         temp_df = pd.DataFrame.from_dict(parking_space_by_id_dict, orient='index')
         # set index to parking space id
-        temp_df.set_index('parking_space_id', inplace=True)
+        temp_df.set_index('parking_id', inplace=True)
         # trasform index to int
         temp_df.index = temp_df.index.astype(int)
         # sort index in ascending number order
 
-        # check if there are new parking_space_id that are not in cls_df yet
-        new_parking_space_id_df = temp_df[temp_df.index.isin(self.cls_df.index) == False]
-        # new_parking_space_id_df = temp_df[temp_df["parking_space_id"].isin(self.cls_df["parking_space_id"]) == False]
-        # print log of those new parking_space_id and there df values with tabulate
-        if new_parking_space_id_df.empty == False:
+        # check if there are new parking_id that are not in cls_df yet
+        new_parking_id_df = temp_df[temp_df.index.isin(self.prk_info_df.index) == False]
+        # print log of those new parking_id and there df values with tabulate
+        if new_parking_id_df.empty == False:
+            pass
             # self.cls_logger.info("New parking space found:")
-            # self.cls_logger.info(tabulate(new_parking_space_id_df, headers='keys', tablefmt='psql'))
+            # self.cls_logger.info(tabulate(new_parking_id_df, headers='keys', tablefmt='psql'))
             # add new parking space to cls_df
-            self.cls_df = self.cls_df.append(new_parking_space_id_df)
-
-        self.cls_df.sort_index(inplace=True)
-        # write df to csv
-        self.cls_df.to_csv(self.cls_path, index=True)
 
 
 if __name__ == '__main__':
@@ -138,8 +141,10 @@ if __name__ == '__main__':
 
     # parking = Parking()
     pid = 1
+    tonnage = "free"
     # response = parking.get_parking_space_tonnage(str(pid))
-    db = DBHandler()
-    for i in range(1, 10):
-        db.update_parking_tonnage(pid, str(i))
-    # db.update_parking_tonnage(pid, "check")
+    dbh = DBHandler()
+    t1 = "2022-07-16 15:38:10"
+    t2 = "2022-07-16 15:40:15"
+    result = dbh.get_parking_tonnage_up_to_count(pid, 3)
+    print(result)
