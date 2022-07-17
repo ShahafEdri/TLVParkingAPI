@@ -3,21 +3,23 @@ from logging import Logger
 import pandas as pd
 from pandas.errors import EmptyDataError
 from tabulate import tabulate
-
-CLS_ROOT = 'parking_db/'
+from parking_utils import ParkingUtils
 
 
 class DBHandler:
     def __init__(self):
         # set logger
         self.cls_logger = Logger(__name__)
-        # TODO move to utils
-        _cls_file = 'parking_info.csv'
-        self.prk_info_path = CLS_ROOT + _cls_file
-        self.info_db_headers = ['parking_id', 'name_hebrew', 'name_english', 'address_hebrew', 'address_english', 'geo_lat', 'geo_lng']
+        self.pu = ParkingUtils()
 
+        self._parking_info_path = self.pu.get_parking_info_path()
+        self._parking_info_headers = self.pu.get_parking_info_db_headers()
+        self._parking_tonnage_path = self.pu.get_parking_tonnage_path()
+        self._parking_tonnage_headers = self.pu.get_parking_tonnage_db_headers()
+
+        # try to read csv if not, create new one
         try:
-            temp_df = pd.read_csv(self.prk_info_path)
+            temp_df = pd.read_csv(self._parking_info_path)
             temp_df.set_index('parking_id', inplace=True)
             # trasform index to int
             temp_df.index = temp_df.index.astype(int)
@@ -25,47 +27,56 @@ class DBHandler:
             temp_df.sort_index(inplace=True)
 
         except:
-            temp_df = pd.DataFrame(columns=self.info_db_headers)
+            temp_df = pd.DataFrame(columns=self._parking_info_headers)
             temp_df.set_index('parking_id', inplace=True)
-            temp_df.to_csv(self.prk_info_path, index=True)
+            temp_df.to_csv(self._parking_info_path, index=True)
         self.prk_info_df = temp_df
 
-        # TODO move to utils
-        _cls_file = 'parking_tonnage.csv'
-        self.prk_tnng_path = CLS_ROOT + _cls_file
-        self.tonnage_headers = ['timestamp', 'parking_id', 'tonnage']
         # try to read csv if not, create new one
         try:
-            temp_df = pd.read_csv(self.prk_tnng_path)
+            temp_df = pd.read_csv(self._parking_tonnage_path)
             temp_df.set_index('timestamp', inplace=True)
             # sort df by timestamp in ascending order (oldest first)
             temp_df.sort_index(inplace=True)
         except (FileNotFoundError, EmptyDataError):
-            temp_df = pd.DataFrame(columns=self.tonnage_headers)
+            temp_df = pd.DataFrame(columns=self._parking_tonnage_headers)
             temp_df.set_index('timestamp', inplace=True)
-            temp_df.to_csv(self.prk_tnng_path, index=True)
-        self.prk_tnng_db = temp_df
+            temp_df.to_csv(self._parking_tonnage_path, index=True)
+        self.prk_tnng_df = temp_df
         # add group by parking space id
-        self.prk_tnng_db_by_id = self.prk_tnng_db.groupby(self.tonnage_headers[1])
+        self.prk_tnng_db_by_id = self.prk_tnng_df.groupby(self._parking_tonnage_headers[1])
 
     def add_new_parking_tonnage(self, parking_id: int, tonnage: str):
         '''Add new parking tonnage to db'''
         # get current timestamp with format '%Y-%m-%d %H:%M:%S'
         timestamp = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
         # create new dataframe with parking space id, parking tonnage and timestamp
-        temp_df = pd.DataFrame([[timestamp, parking_id, tonnage]], columns=self.tonnage_headers)
+        temp_df = pd.DataFrame([[timestamp, parking_id, tonnage]], columns=self._parking_tonnage_headers)
         # set index to timestamp
-        temp_df.set_index(self.tonnage_headers[0], inplace=True)
+        temp_df.set_index(self._parking_tonnage_headers[0], inplace=True)
         # concatenate with current db and sort by timestamp
-        self.prk_tnng_db = pd.concat([self.prk_tnng_db, temp_df])
-        # sort by timestamp
-        self.prk_tnng_db.sort_index(inplace=True)
+        self.prk_tnng_df = pd.concat([self.prk_tnng_df, temp_df])
         # rewrite df to csv
-        self.prk_tnng_db.to_csv(self.prk_tnng_path, index=True)
+        self.prk_tnng_df.to_csv(self._parking_tonnage_path, index=True)
 
-    def update_parking_tonnage_by_dict(self, parking_tonnage_dict, rewrite_db: bool = True):
-        '''Add parking tonnage to db'''
-        pass
+    def update_all_parking_tonnages_by_dict(self, parking_tonnage_dict):
+        '''Add all parking tonnage to db'''
+        # create new dataframe from dict with columns parking space id, parking tonnage and timestamp
+        temp_df = pd.DataFrame.from_dict(parking_tonnage_dict, orient='index',columns=[self._parking_tonnage_headers[2]])
+        # add headers
+        temp_df.index.name = self._parking_tonnage_headers[1]
+        # get current timestamp with format '%Y-%m-%d %H:%M:%S'
+        timestamp = pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
+        # add timestamp to dataframe
+        temp_df[self._parking_tonnage_headers[0]] = timestamp
+        # remove index from dataframe
+        temp_df.reset_index(inplace=True)
+        # change index to from parking id to timestamp
+        temp_df.set_index(self._parking_tonnage_headers[0], inplace=True)
+        # concatenate with current db and sort by timestamp
+        self.prk_tnng_df = pd.concat([self.prk_tnng_df, temp_df])
+        # rewrite df to csv
+        self.prk_tnng_df.to_csv(self._parking_tonnage_path, index=True)
 
     def get_last_parking_tonnage(self, parking_id):
         '''Get latest parking tonnage from db'''
@@ -107,8 +118,7 @@ class DBHandler:
         # delete parking tonnage for parking space id and timestamp
         self.prk_tnng_db_by_id.get_group(parking_id).drop(timestamp, inplace=True)
         # rewrite df to csv
-        self.prk_tnng_db.to_csv(self.prk_tnng_path, index=True)
-        
+        self.prk_tnng_df.to_csv(self._parking_tonnage_path, index=True)
 
     def get_parking_ids(self) -> list:
         '''Get all parking space ids'''
@@ -134,6 +144,14 @@ class DBHandler:
             # self.cls_logger.info("New parking space found:")
             # self.cls_logger.info(tabulate(new_parking_id_df, headers='keys', tablefmt='psql'))
             # add new parking space to cls_df
+        # overwrite cls_df with temp_df
+        self.prk_info_df = temp_df
+        # sort index in ascending number order
+        self.prk_info_df.sort_index(inplace=True)
+        # rewrite df to csv
+        self.prk_info_df.to_csv(self._parking_info_path, index=True)
+
+
 
 
 if __name__ == '__main__':
