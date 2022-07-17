@@ -3,15 +3,18 @@ from typing import Any, Dict, Optional
 from googletrans import Translator
 import requests
 from bs4 import BeautifulSoup
+from general_utils import singleton
 from google_maps_utils import GoogleMapsAPI
-from parking_scraper import Parking_Scraper
+from parking_scraper import Parking_Scraper, worker_scrape_for_parking_space_tonnage
 from parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, PARKING_URL_ALL, ignored_parking_names
 from logging import Logger
 from logging import getLogger
 
 from parking_worker import Parking_Worker
+import multiprocessing as mp
+from parking_utils import ParkingUtils
 
-
+@singleton
 class ParkingManager():
 
     def __init__(self):
@@ -20,6 +23,7 @@ class ParkingManager():
         self.cls_logger = Logger(__name__)
         self.ps = Parking_Scraper()
         self.pw = Parking_Worker()
+        self.pu = ParkingUtils()
 
     def get_parking_space_tonnage(self, parking_url_id) -> str:
         """get parking space tonnage of specific parking garage"""
@@ -37,6 +41,7 @@ class ParkingManager():
 
         # self.cls_logger.info(f"scraping data from Ahuzot Hachof website")
         parking_names_and_locations = dict()
+        db_headers=self.pu.get_parking_info_db_headers()
         for match in all_scrape_parking_matchs:
             url_id, name_hebrew, address_hebrew = self.ps.parking_data_scraping(match_parent=match)
             if name_hebrew in (self.ignored_parking_names):
@@ -44,15 +49,14 @@ class ParkingManager():
                 continue
             name_english, address_english, geo_lat, geo_lng = self.pw.get_parking_info(name_hebrew, address_hebrew)
 
-            # dict_name = name_english.lower().replace(' ', '_')
             parking_names_and_locations[url_id] = {
-                "parking_space_id": url_id,
-                "name_hebrew": name_hebrew,
-                "name_english": name_english,
-                "address_hebrew": address_hebrew,
-                "address_english": address_english,
-                "geo_lat": geo_lat,
-                "geo_lng": geo_lng,
+                db_headers[0]: url_id,
+                db_headers[1]: name_hebrew,
+                db_headers[2]: name_english,
+                db_headers[3]: address_hebrew,
+                db_headers[4]: address_english,
+                db_headers[5]: geo_lat,
+                db_headers[6]: geo_lng,
             }
         # self.cls_logger.info(f"{len(parking_names_and_locations)} parking garages scraped")
         return parking_names_and_locations
