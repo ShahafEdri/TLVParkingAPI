@@ -6,6 +6,6 @@ parking_db/*
 .vscode/launch.json
 .vscode/settings.json
 
-# other
 # other files
 *cpython*
+action_items

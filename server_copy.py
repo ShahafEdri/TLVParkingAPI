@@ -5,13 +5,11 @@ from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
 from parking_manager import ParkingTLV
-from validate import Validate
 
 
 app = Flask(__name__)
 api = Api(app)
 
-v = Validate()
 p = ParkingTLV()
 
 
