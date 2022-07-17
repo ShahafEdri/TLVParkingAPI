@@ -25,15 +25,25 @@ class ParkingManager():
         self.pw = Parking_Worker()
         self.pu = ParkingUtils()
 
+
+
+
+    def get_parking_space_tonnage_parallel(self, parking_ids:list) -> Dict[str, str]:
+        """get parking space tonnage of specific parking garage"""
+        with mp.Pool(processes=mp.cpu_count()) as pool:
+            # add parrking_url_prefix to each parking_id
+            parking_urls = [PARKING_URL_SPECIFIC_PREFIX + str(parking_id) for parking_id in parking_ids]
+            results = pool.map(worker_scrape_for_parking_space_tonnage, parking_urls)
+        return dict(zip(parking_ids, results))
+
     def get_parking_space_tonnage(self, parking_url_id) -> str:
         """get parking space tonnage of specific parking garage"""
-
         full_parking_url = PARKING_URL_SPECIFIC_PREFIX + parking_url_id
         parking_space_tonnage = self.ps.scrape_for_parking_space_tonnage(full_parking_url)
         # self.cls_logger.info(f"{parking_url_id} has {f}")
         return parking_space_tonnage
 
-    def get_parking_garages_dict(self) -> Optional[Dict[str, Dict[str, Any]]]:
+    def get_all_parking_garages_info(self) -> Optional[Dict[str, Dict[str, Any]]]:
         '''get all the parking garage names'''
         # self.cls_logger.info(f"find all parking garages in Ahuzot Hachof website")
         all_scrape_parking_matchs = self.ps.get_html_list_of_all_parking_garages(url=PARKING_URL_ALL)
@@ -43,11 +53,12 @@ class ParkingManager():
         parking_names_and_locations = dict()
         db_headers=self.pu.get_parking_info_db_headers()
         for match in all_scrape_parking_matchs:
-            url_id, name_hebrew, address_hebrew = self.ps.parking_data_scraping(match_parent=match)
+            url_id, name_hebrew, address_hebrew = self.ps.parking_info_scraping(match=match)
             if name_hebrew in (self.ignored_parking_names):
                 self.cls_logger.error(f"could not find {name_hebrew} in google maps")
                 continue
-            name_english, address_english, geo_lat, geo_lng = self.pw.get_parking_info(name_hebrew, address_hebrew)
+            # name_english, address_english, geo_lat, geo_lng = self.pw.get_parking_info(name_hebrew, address_hebrew)
+            name_english, address_english, geo_lat, geo_lng = None, None, None, None
 
             parking_names_and_locations[url_id] = {
                 db_headers[0]: url_id,
@@ -63,12 +74,14 @@ class ParkingManager():
 
 
 if __name__ == "__main__":
-    p = ParkingManager()
+    pm = ParkingManager()
     # while(True):
     #     parking_garage = "Arlozorov"
     #     pst = p.get_parking_space_tonnage(str(Parking_Names_Tlv_Dict[parking_garage]))  # pst=parking_space_tonnage
     #     print(f"parking_garage => {parking_garage}, status => {pst}")
     #     sleep(10)
 
-    parking_names_dict = p.get_parking_garages_dict()
-    print(parking_names_dict)
+    result = pm.get_all_parking_garages_info()
+
+    # result = pm.get_parking_space_tonnage_parallel()
+    print(result)
