@@ -3,7 +3,7 @@ from logging import Logger
 import pandas as pd
 from pandas.errors import EmptyDataError
 from tabulate import tabulate
-from parking_utils import ParkingUtils
+from parking.parking_utils import ParkingUtils
 
 
 class DBHandler:
@@ -155,7 +155,7 @@ class DBHandler:
 
 
 if __name__ == '__main__':
-    from parking_manager import ParkingManager
+    from parking.parking_manager import ParkingManager
 
     # parking = Parking()
     pid = 1

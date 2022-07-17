@@ -1,3 +1,4 @@
+import os
 import requests
 
 URL = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
@@ -17,8 +18,16 @@ class GoogleMapsAPI():
     # read file from pc and return the apikey as string
     @staticmethod
     def get_api_key():
-        with open("C:/Users/shahafe/api_key.txt", "r") as f:
-            api_key = f.read()
+        try:
+            # if unix, read the api key from the os environment
+            if os.name == 'posix':
+                api_key = os.environ['GOOGLE_API_KEY']
+            # if windows, read the api key from the file
+            else:
+                with open("C:/Users/shahafe/api_key.txt", "r") as f:
+                    api_key = f.read()
+        except (FileNotFoundError, KeyError):
+            raise Exception("No api key found in file")
         return api_key
 
     def get_address_reponse(self, name=None, address="", json_flag=False, text_flag=False, oriented_flag=False):

@@ -1,6 +1,6 @@
 from db_handler import DBHandler
-from general_utils import singleton
-from parking_manager import ParkingManager
+from utils.general_utils import singleton
+from parking.parking_manager import ParkingManager
 from logging import getLogger
 
 @singleton

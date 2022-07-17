@@ -3,8 +3,8 @@ from flask import Flask
 from flask import request
 
 from flask_restful import Resource, Api, reqparse
-from db_manager import DBManager
-from parking_manager import ParkingManager
+from db.db_manager import DBManager
+from parking.parking_manager import ParkingManager
 from logging import WARNING, Formatter, basicConfig, getLogger, INFO, FileHandler
 
 

@@ -5,7 +5,7 @@ import re
 from typing import Any
 
 from googletrans import Translator
-from google_maps_utils import GoogleMapsAPI
+from google_api.google_maps_utils import GoogleMapsAPI
 from parking_scraper import Parking_Scraper
 from parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, ignored_parking_names
 

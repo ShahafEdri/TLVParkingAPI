@@ -3,8 +3,8 @@ from typing import Any, Dict, Optional
 from googletrans import Translator
 import requests
 from bs4 import BeautifulSoup
-from general_utils import singleton
-from google_maps_utils import GoogleMapsAPI
+from utils.general_utils import singleton
+from google_api.google_maps_utils import GoogleMapsAPI
 from parking_scraper import Parking_Scraper, worker_scrape_for_parking_space_tonnage
 from parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, PARKING_URL_ALL, ignored_parking_names
 from logging import Logger
