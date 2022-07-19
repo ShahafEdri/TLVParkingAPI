@@ -62,7 +62,7 @@ class DBHandler:
     def update_all_parking_tonnages_by_dict(self, parking_tonnage_dict):
         '''Add all parking tonnage to db'''
         # create new dataframe from dict with columns parking space id, parking tonnage and timestamp
-        temp_df = pd.DataFrame.from_dict(parking_tonnage_dict, orient='index',columns=[self._parking_tonnage_headers[2]])
+        temp_df = pd.DataFrame.from_dict(parking_tonnage_dict, orient='index', columns=[self._parking_tonnage_headers[2]])
         # add headers
         temp_df.index.name = self._parking_tonnage_headers[1]
         # get current timestamp with format '%Y-%m-%d %H:%M:%S'
@@ -150,8 +150,6 @@ class DBHandler:
         self.prk_info_df.sort_index(inplace=True)
         # rewrite df to csv
         self.prk_info_df.to_csv(self._parking_info_path, index=True)
-
-
 
 
 if __name__ == '__main__':

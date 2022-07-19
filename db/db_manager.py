@@ -3,6 +3,7 @@ from utils.general_utils import singleton
 from parking.parking_manager import ParkingManager
 from logging import getLogger
 
+
 @singleton
 class DBManager:
     def __init__(self):
@@ -19,7 +20,6 @@ class DBManager:
         '''Update parking space info'''
         parking_info_dict = self.pm.get_all_parking_garages_info()
         self.dbh.update_all_parking_space_information(parking_info_dict)
-
 
     def update_all_parking_spaces_info(self):
         '''Update all parking spaces info'''
@@ -40,9 +40,11 @@ class DBManager:
         parking_space_ids = self.dbh.get_parking_ids()
         parking_tonnage_dict = self.pm.get_parking_space_tonnage_parallel(parking_space_ids)
         self.dbh.update_all_parking_tonnages_by_dict(parking_tonnage_dict)
-        
+
 
 if __name__ == '__main__':
     dbm = DBManager()
     # dbm.update_all_parking_space_info()
+    # get logger
+    logger = getLogger()
     dbm.update_all_parking_spaces_tonnages_parallel()
