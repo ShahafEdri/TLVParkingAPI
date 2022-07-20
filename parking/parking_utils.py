@@ -19,7 +19,6 @@ heb2eng_dict = {
 }
 
 
-
 ignored_parking_names = [
     'חניון הבעש"ט',  # google maps can't find it
     'חניון הבעש"ט',  # google maps can't find it

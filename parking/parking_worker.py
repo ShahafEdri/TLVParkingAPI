@@ -4,16 +4,16 @@ from logging import Logger
 import re
 from typing import Any
 
-from googletrans import Translator
+from google_api.google_translate_utils import Translator
 from google_api.google_maps_utils import GoogleMapsAPI
-from parking_scraper import Parking_Scraper
-from parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, ignored_parking_names
-
+from parking.parking_scraper import Parking_Scraper
+from parking.parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, ignored_parking_names
+from utils.logging_utils import logger
 
 class Parking_Worker():
     def __init__(self) -> None:
         self.cls_root = 'parking/'
-        self.cls_logger = Logger(__name__)
+        self.cls_logger = logger
         self.gmps = GoogleMapsAPI()
         self.gtrn = Translator()
         self.ignored_parking_names = ignored_parking_names

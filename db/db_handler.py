@@ -1,15 +1,15 @@
-from logging import Logger
 
 import pandas as pd
 from pandas.errors import EmptyDataError
-from tabulate import tabulate
 from parking.parking_utils import ParkingUtils
+from tabulate import tabulate
+from utils.logging_utils import logger
 
 
 class DBHandler:
     def __init__(self):
         # set logger
-        self.cls_logger = Logger(__name__)
+        self.cls_logger = logger
         self.pu = ParkingUtils()
 
         self._parking_info_path = self.pu.get_parking_info_path()
@@ -141,8 +141,8 @@ class DBHandler:
         # print log of those new parking_id and there df values with tabulate
         if new_parking_id_df.empty == False:
             pass
-            # self.cls_logger.info("New parking space found:")
-            # self.cls_logger.info(tabulate(new_parking_id_df, headers='keys', tablefmt='psql'))
+            self.cls_logger.info("New parking space found:")
+            self.cls_logger.info(tabulate(new_parking_id_df, headers='keys', tablefmt='psql'))
             # add new parking space to cls_df
         # overwrite cls_df with temp_df
         self.prk_info_df = temp_df

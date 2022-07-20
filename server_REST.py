@@ -1,14 +1,13 @@
 from asyncio import Server
-from flask import Flask
-from flask import request
+from logging import INFO, WARNING, FileHandler, Formatter
 
-from flask_restful import Resource, Api, reqparse
+from flask import Flask, request
+from flask_apscheduler import APScheduler
+from flask_restful import Api, Resource, reqparse
+
 from db.db_manager import DBManager
 from parking.parking_manager import ParkingManager
-from logging import WARNING, Formatter, basicConfig, getLogger, INFO, FileHandler
-
-
-from  flask_apscheduler import APScheduler
+from utils.logging_utils import FORMAT2
 
 scheduler = APScheduler()
 
@@ -16,10 +15,9 @@ app = Flask(__name__)
 api = Api(app)
 
 
-FORMAT = '[%(asctime)s] %(levelname)s in %(filename)s: %(message)s'
 file_handler = FileHandler('server_REST.log', mode='a',)
 file_handler.setLevel(WARNING)
-file_handler.setFormatter(Formatter(FORMAT))
+file_handler.setFormatter(Formatter(FORMAT2))
 app.logger.addHandler(file_handler)
 app.logger.setLevel(INFO)
 

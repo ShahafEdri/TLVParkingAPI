@@ -1,17 +1,16 @@
-
-
-from logging import Logger
 import re
 from typing import Any
-from bs4 import BeautifulSoup
-from parking_utils import heb2eng_dict
 
 import requests
+from bs4 import BeautifulSoup
+from utils.logging_utils import logger
+
+from parking.parking_utils import heb2eng_dict
 
 
 class Parking_Scraper():
     def __init__(self) -> None:
-        self.cls_logger = Logger(__name__)
+        self.cls_logger = logger
 
     def get_html_list_of_all_parking_garages(self, url) -> Any:
         """get all the parking garage names"""
@@ -35,7 +34,7 @@ class Parking_Scraper():
         r = requests.get(parking_url_id)
         soup = BeautifulSoup(r.text, 'lxml')
 
-        # self.cls_logger.info(f"scraping parking space tonnage of {parking_url_id}")
+        self.cls_logger.info(f"scraping parking space tonnage of {parking_url_id}")
         # match = soup.div
         matchdiv = soup.find('div', id="ctl06_data1_UpdatePanel1_0")
         try:
@@ -46,27 +45,22 @@ class Parking_Scraper():
         rematch = re.match(pattern=r"\S+ParkingIcons/(\w*).png", string=match["src"])
         parking_space_tonnage = rematch.group(1)
         result = heb2eng_dict[parking_space_tonnage]
-        # self.cls_logger.info(f"{parking_url_id} has {result}")
+        self.cls_logger.info(f"{parking_url_id} has {result}")
         return result
 
-    
+
 def worker_scrape_for_parking_space_tonnage(parking_url_id) -> str:
     """get parking space tonnage of specific parking garage"""
-    
+
     r = requests.get(parking_url_id)
     soup = BeautifulSoup(r.text, 'lxml')
 
-    # self.cls_logger.info(f"scraping parking space tonnage of {parking_url_id}")
-    # match = soup.div
     matchdiv = soup.find('div', id="ctl06_data1_UpdatePanel1_0")
     try:
         match = matchdiv.find_all("img")[1]
     except IndexError:
-        # self.cls_logger.error(f"could not find parking space tonnage of {parking_url_id}")
         return "not_valid"
     rematch = re.match(pattern=r"\S+ParkingIcons/(\w*).png", string=match["src"])
     parking_space_tonnage = rematch.group(1)
     result = heb2eng_dict[parking_space_tonnage]
-    # self.cls_logger.info(f"{parking_url_id} has {result}")
     return result
-

@@ -1,18 +1,22 @@
+import multiprocessing as mp
 import re
 from typing import Any, Dict, Optional
-from googletrans import Translator
+
 import requests
 from bs4 import BeautifulSoup
-from utils.general_utils import singleton
 from google_api.google_maps_utils import GoogleMapsAPI
-from parking_scraper import Parking_Scraper, worker_scrape_for_parking_space_tonnage
-from parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, PARKING_URL_ALL, ignored_parking_names
-from logging import Logger
-from logging import getLogger
+from googletrans import Translator
+from utils.general_utils import singleton
+from utils.logging_utils import logger
 
-from parking_worker import Parking_Worker
-import multiprocessing as mp
-from parking_utils import ParkingUtils
+from parking.parking_scraper import (Parking_Scraper,
+                                     worker_scrape_for_parking_space_tonnage)
+from parking.parking_utils import (PARKING_URL_ALL,
+                                   PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict,
+                                   ignored_parking_names)
+from parking.parking_utils import ParkingUtils
+from parking.parking_worker import Parking_Worker
+
 
 @singleton
 class ParkingManager():
@@ -20,7 +24,7 @@ class ParkingManager():
     def __init__(self):
         self.cls_root = 'parking/'
         self.ignored_parking_names = ignored_parking_names
-        self.cls_logger = Logger(__name__)
+        self.cls_logger = logger
         self.ps = Parking_Scraper()
         self.pw = Parking_Worker()
         self.pu = ParkingUtils()

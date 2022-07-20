@@ -1,22 +1,30 @@
 import logging
+import os
 import sys
 from datetime import datetime
+
+LOGGING_DIR = 'logs'
 
 logger = logging.getLogger('prk-logger')
 logger.setLevel(logging.DEBUG)
 # create console handler and set level to debug
-ch = logging.StreamHandler(stream=sys.stdout)
-ch.setLevel(logging.INFO)
+streamHandler = logging.StreamHandler(stream=sys.stdout)
+streamHandler.setLevel(logging.INFO)
 # create formatter
-formatter = logging.Formatter('[%(asctime)s] %(levelname)-9s: %(filename)s - %(message)s'.ljust(40))
+FORMAT1 = '[%(asctime)s] %(levelname)-9s in %(filename)s: %(message)s'
+FORMAT2 = '[%(asctime)s] %(filename)-20s %(levelname)s: %(message)s'
+formatter = logging.Formatter(FORMAT2.ljust(40))
 # add formatter to ch
-ch.setFormatter(formatter)
+streamHandler.setFormatter(formatter)
 # add ch to logger
-logger.addHandler(ch)
+logger.addHandler(streamHandler)
 # Add file handler + UUID for PD runs
 timestamp = str(datetime.now()).replace(" ", "_")
 timestamp = str(datetime.strftime(datetime.now(), '%Y_%m_%d_%H_%M_%S'))
-fileHandler = logging.FileHandler(f"{logger.name}__{timestamp}.log", mode="w")
+# check if log dir exists
+if not os.path.exists(LOGGING_DIR):
+    os.makedirs(LOGGING_DIR)
+fileHandler = logging.FileHandler(f"{LOGGING_DIR}/{logger.name}__{timestamp}.log", mode="w")
 fileHandler.set_name("file-handler")
 fileHandler.setFormatter(formatter)
 fileHandler.setLevel(logging.DEBUG)

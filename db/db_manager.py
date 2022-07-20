@@ -1,7 +1,16 @@
-from db_handler import DBHandler
-from utils.general_utils import singleton
+import os
+import sys
+
+wd = 'C:/Users/shahafe/Documents/vscode_projects/python_http_request'
+sys.path.append(wd)
+os.chdir(wd)
+print(os.getcwd())
+print(sys.path)
 from parking.parking_manager import ParkingManager
-from logging import getLogger
+from utils.general_utils import singleton
+from utils.logging_utils import logger
+
+from db_handler import DBHandler
 
 
 @singleton
@@ -9,7 +18,7 @@ class DBManager:
     def __init__(self):
         self.dbh = DBHandler()
         self.pm = ParkingManager()
-        self.logger = getLogger()
+        self.logger = logger
 
     # def add_parking_tonnage(self, parking_space_id: int):
     #     '''Add parking tonnage to db'''
@@ -43,8 +52,8 @@ class DBManager:
 
 
 if __name__ == '__main__':
-    dbm = DBManager()
+    # dbm = DBManager()
     # dbm.update_all_parking_space_info()
     # get logger
-    logger = getLogger()
-    dbm.update_all_parking_spaces_tonnages_parallel()
+    # dbm.update_all_parking_spaces_tonnages_parallel()
+    pass
