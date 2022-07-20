@@ -1,11 +1,11 @@
 import os
 import sys
 
-wd = 'C:/Users/shahafe/Documents/vscode_projects/python_http_request'
-sys.path.append(wd)
-os.chdir(wd)
-print(os.getcwd())
-print(sys.path)
+# wd = 'C:/Users/shahafe/Documents/vscode_projects/python_http_request'
+# sys.path.append(wd)
+# os.chdir(wd)
+# print(os.getcwd())
+# print(sys.path)
 from parking.parking_manager import ParkingManager
 from utils.general_utils import singleton
 from utils.logging_utils import logger
