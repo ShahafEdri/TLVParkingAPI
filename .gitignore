@@ -5,7 +5,14 @@ parking_db/*
 # vscode stuff
 .vscode/launch.json
 .vscode/settings.json
+*.code-workspace
 
 # other files
 *cpython*
 action_items
+
+# venv
+venv/*
+
+# db
+instance/*
