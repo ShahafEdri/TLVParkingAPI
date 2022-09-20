@@ -3,9 +3,10 @@ import pandas as pd
 from pandas.errors import EmptyDataError
 from parking.parking_utils import ParkingUtils
 from tabulate import tabulate
+from utils.general_utils import singleton
 from utils.logging_utils import logger
 
-
+@singleton
 class DBHandler:
     def __init__(self):
         # set logger

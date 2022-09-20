@@ -1,8 +1,8 @@
-CLS_ROOT = 'parking_db/'
+CLS_ROOT =  'parking_db/'
 PARKING_URL_ALL = "https://www.ahuzot.co.il/Parking/All/"
 PARKING_URL_SPECIFIC_PREFIX = "https://www.ahuzot.co.il/Parking/ParkingDetails/?ID="
 
-
+# XXX: remove
 Parking_Names_Tlv_Dict = {  # TODO scrape automatically
     "Arlozorov": 123,
     "Assuta": 122,
@@ -10,6 +10,7 @@ Parking_Names_Tlv_Dict = {  # TODO scrape automatically
     "Rebnitzki": 40
 }
 
+# TODO: get from config file
 heb2eng_dict = {
     "panui": "available",
     "meat": "almost full",
@@ -18,6 +19,7 @@ heb2eng_dict = {
     "pail": "active",
 }
 
+# TODO: get from config file
 
 ignored_parking_names = [
     'חניון הבעש"ט',  # google maps can't find it

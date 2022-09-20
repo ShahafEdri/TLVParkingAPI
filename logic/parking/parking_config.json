@@ -1,0 +1,14 @@
+{
+    "CLS_ROOT": "parking_db/",
+    "PARKING_URL_ALL": "https://www.ahuzot.co.il/Parking/All/",
+    "PARKING_URL_SPECIFIC_PREFIX": "https://www.ahuzot.co.il/Parking/ParkingDetails/?ID=",
+    "heb2eng_dict": {
+        "panui": "available",
+        "meat": "almost full",
+        "male": "full",
+        "sagur": "closed",
+        "pail": "active"
+
+    }
+}
+

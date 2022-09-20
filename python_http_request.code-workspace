@@ -6,6 +6,7 @@
 		}
 	],
 	"settings": {
-		"python.linting.enabled": true
+		"python.linting.enabled": true,
+		"python.pythonPath": "python"
 	}
 }

@@ -10,7 +10,7 @@ from parking.parking_manager import ParkingManager
 from utils.general_utils import singleton
 from utils.logging_utils import logger
 
-from db_handler import DBHandler
+from db.db_handler import DBHandler
 
 
 @singleton
