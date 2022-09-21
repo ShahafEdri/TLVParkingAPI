@@ -4,17 +4,19 @@ from typing import Any, Dict, Optional
 
 import requests
 from bs4 import BeautifulSoup
-from google_api.google_maps_utils import GoogleMapsAPI
+
+from utils.google_api.google_translate_utils import 
+from utils.google_api.google_maps import GoogleMapsAPI
 from googletrans import Translator
 from utils.general_utils import singleton
 from utils.logging_utils import logger
 
+from parking import parking_manger_obj
 from parking.parking_scraper import (Parking_Scraper,
                                      worker_scrape_for_parking_space_tonnage)
 from parking.parking_utils import (PARKING_URL_ALL,
-                                   PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict,
-                                   ignored_parking_names)
-from parking.parking_utils import ParkingUtils
+                                   PARKING_URL_SPECIFIC_PREFIX, ParkingUtils,
+                                   heb2eng_dict, ignored_parking_names)
 from parking.parking_worker import Parking_Worker
 
 
@@ -29,10 +31,7 @@ class ParkingManager():
         self.pw = Parking_Worker()
         self.pu = ParkingUtils()
 
-
-
-
-    def get_parking_space_tonnage_parallel(self, parking_ids:list) -> Dict[str, str]:
+    def get_parking_space_tonnage_parallel(self, parking_ids: list) -> Dict[str, str]:
         """get parking space tonnage of specific parking garage"""
         with mp.Pool(processes=mp.cpu_count()) as pool:
             # add parrking_url_prefix to each parking_id
@@ -55,7 +54,7 @@ class ParkingManager():
 
         # self.cls_logger.info(f"scraping data from Ahuzot Hachof website")
         parking_names_and_locations = dict()
-        db_headers=self.pu.get_parking_info_db_headers()
+        db_headers = self.pu.get_parking_info_db_headers()
         for match in all_scrape_parking_matchs:
             url_id, name_hebrew, address_hebrew = self.ps.parking_info_scraping(match=match)
             if name_hebrew in (self.ignored_parking_names):

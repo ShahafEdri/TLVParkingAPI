@@ -6,6 +6,7 @@ from tabulate import tabulate
 from utils.general_utils import singleton
 from utils.logging_utils import logger
 
+
 @singleton
 class DBHandler:
     def __init__(self):

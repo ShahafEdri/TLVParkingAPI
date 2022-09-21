@@ -11,8 +11,5 @@ parking_db/*
 *cpython*
 action_items
 
-# venv
-venv/*
-
 # db
 instance/*

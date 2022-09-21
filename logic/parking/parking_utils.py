@@ -1,4 +1,4 @@
-CLS_ROOT =  'parking_db/'
+CLS_ROOT = 'parking_db/'
 PARKING_URL_ALL = "https://www.ahuzot.co.il/Parking/All/"
 PARKING_URL_SPECIFIC_PREFIX = "https://www.ahuzot.co.il/Parking/ParkingDetails/?ID="
 

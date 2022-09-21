@@ -1,13 +1,12 @@
 import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..\\..'))
 import tempfile
-from flask import Flask
-from flask.testing import FlaskClient
 
 import pytest
+from flask import Flask
+from flask.testing import FlaskClient
 from flaskr import create_app
 from flaskr.db import get_db, init_db
+
 
 with open(os.path.join(os.path.dirname(__file__), 'data.sql'), 'rb') as f:
     _data_sql = f.read().decode('utf8')
@@ -33,12 +32,12 @@ def app():
 
 
 @pytest.fixture
-def client(app:Flask):
+def client(app: Flask):
     return app.test_client()
 
 
 @pytest.fixture
-def runner(app:Flask):
+def runner(app: Flask):
     return app.test_cli_runner()
 
 

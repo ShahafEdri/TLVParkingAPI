@@ -10,6 +10,7 @@ from parking.parking_scraper import Parking_Scraper
 from parking.parking_utils import PARKING_URL_SPECIFIC_PREFIX, heb2eng_dict, ignored_parking_names
 from utils.logging_utils import logger
 
+
 class Parking_Worker():
     def __init__(self) -> None:
         self.cls_root = 'parking/'
@@ -19,8 +20,7 @@ class Parking_Worker():
         self.ignored_parking_names = ignored_parking_names
         self.ps = Parking_Scraper()
 
-
-    def get_parking_info(self,name_hebrew:str, address_hebrew:str) -> Any:
+    def get_parking_info(self, name_hebrew: str, address_hebrew: str) -> Any:
         if name_hebrew in (self.ignored_parking_names):
             self.cls_logger.error(f"could not find {name_hebrew} in google maps")
             return None

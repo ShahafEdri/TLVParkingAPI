@@ -4,12 +4,14 @@ from os import path
 from setuptools import setup, find_packages
 
 requirements = [
-    'flask>=2.2',
+    'flask==2.2',
+    'request',
+    'bs4',
 ]
 
 version_file = path.join(
     path.dirname(__file__),
-    'flask_restful',
+    'flaskr',
     '__version__.py'
 )
 
