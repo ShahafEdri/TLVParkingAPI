@@ -1,5 +1,6 @@
 import os
 import requests
+from utils.google_api import get_google_api_key
 
 URL = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json"
 
@@ -12,25 +13,10 @@ class GoogleMapsAPI():
             "fields": "formatted_address,name,geometry",
             "input": "",  # the address
             "inputtype": "textquery",
-            "key": self.get_api_key()
+            "key": get_google_api_key()
         }
 
-    # read file from pc and return the apikey as string
-    @staticmethod
-    def get_api_key():
-        try:
-            # if unix, read the api key from the os environment
-            if os.name == 'posix':
-                api_key = os.environ['GOOGLE_API_KEY']
-            # if windows, read the api key from the file
-            else:
-                with open("C:/Users/shahafe/api_key.txt", "r") as f:
-                    api_key = f.read()
-        except (FileNotFoundError, KeyError):
-            raise Exception("No api key found in file")
-        return api_key
-
-    def get_address_reponse(self, name=None, address="", json_flag=False, text_flag=False, oriented_flag=False):
+    def get_address_reponse(self, address="", json_flag=False, text_flag=False, oriented_flag=False):
         """
         get the response of the address
         :param address: the address on which to return the address
@@ -45,9 +31,6 @@ class GoogleMapsAPI():
             print(response.text)
             raise Exception("Error in get_address_reponse")
         elif response_json['status'] == 'ZERO_RESULTS':
-            # return response_json['status']
-            if address != name:
-                return self.get_address_reponse(name, name, json_flag, text_flag, oriented_flag)
             raise ValueError("No results found, wrong address?")
         else:
             return self.reponse_parser(response, response_json, json_flag, oriented_flag, text_flag)
@@ -67,12 +50,6 @@ class GoogleMapsAPI():
             json_response = json_response["candidates"][0]
         lat = json_response['geometry']['location']['lat']
         lng = json_response['geometry']['location']['lng']
-        return lat, lng
-
-    def get_lat_lng(self, address):
-        json = self.get_address_reponse(address=address)
-        lat = json['candidates'][0]['geometry']['location']['lat']
-        lng = json['candidates'][0]['geometry']['location']['lng']
         return lat, lng
 
 
