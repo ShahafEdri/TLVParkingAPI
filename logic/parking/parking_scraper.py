@@ -5,10 +5,10 @@ import requests
 from bs4 import BeautifulSoup
 from utils.logging_utils import logger
 
-from parking.parking_utils import heb2eng_dict
+from logic.parking.parking_utils import heb2eng_dict
 
 
-class Parking_Scraper():
+class ParkingScraper():
     def __init__(self) -> None:
         self.cls_logger = logger
 
@@ -49,10 +49,10 @@ class Parking_Scraper():
         return result
 
 
-def worker_scrape_for_parking_space_tonnage(parking_url_id) -> str:
+def worker_scrape_for_parking_space_tonnage(parking_url_id: str) -> str:
     """get parking space tonnage of specific parking garage"""
 
-    r = requests.get(parking_url_id)
+    r = requests.get(parking_url_id,timeout=500)
     soup = BeautifulSoup(r.text, 'lxml')
 
     matchdiv = soup.find('div', id="ctl06_data1_UpdatePanel1_0")
@@ -64,3 +64,9 @@ def worker_scrape_for_parking_space_tonnage(parking_url_id) -> str:
     parking_space_tonnage = rematch.group(1)
     result = heb2eng_dict[parking_space_tonnage]
     return result
+
+
+if __name__ == "__main__":
+    res = worker_scrape_for_parking_space_tonnage("https://www.ahuzot.co.il/Parking/ParkingDetails/?ID=3")
+    print(res)
+    pass

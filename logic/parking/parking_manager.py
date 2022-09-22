@@ -5,19 +5,16 @@ from typing import Any, Dict, Optional
 import requests
 from bs4 import BeautifulSoup
 
-from utils.google_api.google_translate_utils import 
-from utils.google_api.google_maps import GoogleMapsAPI
-from googletrans import Translator
+from utils.google_api import google_maps_api, translator
 from utils.general_utils import singleton
 from utils.logging_utils import logger
 
-from parking import parking_manger_obj
-from parking.parking_scraper import (Parking_Scraper,
+from logic.parking.parking_scraper import (ParkingScraper,
                                      worker_scrape_for_parking_space_tonnage)
-from parking.parking_utils import (PARKING_URL_ALL,
+from logic.parking.parking_utils import (PARKING_URL_ALL,
                                    PARKING_URL_SPECIFIC_PREFIX, ParkingUtils,
                                    heb2eng_dict, ignored_parking_names)
-from parking.parking_worker import Parking_Worker
+from logic.parking.parking_worker import Parking_Worker
 
 
 @singleton
@@ -27,7 +24,7 @@ class ParkingManager():
         self.cls_root = 'parking/'
         self.ignored_parking_names = ignored_parking_names
         self.cls_logger = logger
-        self.ps = Parking_Scraper()
+        self.ps = ParkingScraper()
         self.pw = Parking_Worker()
         self.pu = ParkingUtils()
 
@@ -78,13 +75,9 @@ class ParkingManager():
 
 if __name__ == "__main__":
     pm = ParkingManager()
-    # while(True):
-    #     parking_garage = "Arlozorov"
-    #     pst = p.get_parking_space_tonnage(str(Parking_Names_Tlv_Dict[parking_garage]))  # pst=parking_space_tonnage
-    #     print(f"parking_garage => {parking_garage}, status => {pst}")
-    #     sleep(10)
 
     result = pm.get_all_parking_garages_info()
-
-    # result = pm.get_parking_space_tonnage_parallel()
+    result = pm.get_parking_space_tonnage_parallel(result.keys())
+#sort by key in in first index
+    result = {k: v for k, v in sorted(result.items(), key=lambda item: item[1][0])}
     print(result)

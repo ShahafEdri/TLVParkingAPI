@@ -58,3 +58,41 @@ class AuthActions(object):
 @pytest.fixture
 def auth(client: FlaskClient):
     return AuthActions(client)
+
+
+@pytest.fixture
+def parking_lots():
+    return {
+        "123": {
+            "parking_id": "123",
+            "name_hebrew": "חניון ארלוזורוב 17",
+            "name_english": None,
+            "address_hebrew": "ארלוזורוב 17 תל-אביב יפו",
+            "address_english": None,
+            "geo_lat": None,
+            "geo_lng": None
+        },
+        "3": {
+            "parking_id": "3",
+            "name_hebrew": "חניון בזל",
+            "name_english": None,
+            "address_hebrew": "אשתורי הפרחי 5 תל-אביב יפו",
+            "address_english": None,
+            "geo_lat": None,
+            "geo_lng": None
+        },
+        "45": {
+            "parking_id": "45",
+            "name_hebrew": "חניון תל-נורדאו",
+            "name_english": None,
+            "address_hebrew": "פרישמן 28 תל-אביב יפו",
+            "address_english": None,
+            "geo_lat": None,
+            "geo_lng": None
+        },
+    }
+
+
+@pytest.fixture
+def tonnage_legitimate_values():
+    return ['full', 'almost full', 'available', 'closed', 'not_valid']
