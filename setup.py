@@ -7,6 +7,7 @@ requirements = [
     'flask==2.2',
     'request',
     'bs4',
+    'lxml',
 ]
 
 version_file = path.join(
