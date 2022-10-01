@@ -3,12 +3,9 @@ import sys
 from os import path
 from setuptools import setup, find_packages
 
-requirements = [
-    'flask==2.2',
-    'request',
-    'bs4',
-    'lxml',
-]
+requirements = []
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
 
 version_file = path.join(
     path.dirname(__file__),
@@ -25,16 +22,21 @@ with open(version_file, 'r') as fp:
     version = m.groups(1)[0]
 
 setup(
-    name='tlv-parking-lots-tonnage-flask',
+    name='TLVParkingAPI',
     version=version,
+    python_requires='~=3.7',
     packages=find_packages(exclude=['tests']),
-    url='https://www.github.com/flask-restful/flask-restful/',
+    url='https://github.com/ShahafEdri/TLVParkingAPI',
     project_urls={
-        'Source': 'https://github.com/flask-restful/flask-restful',
+        'Source': 'https://github.com/ShahafEdri/TLVParkingAPI',
     },
     include_package_data=True,
     install_requires=requirements,
     license='Shahaf Edri',
+    author='Shahaf Edri',
+    description="",
+    long_description="",
+    
 )
 
 if __name__ == "__main__":

@@ -1,0 +1,5 @@
+flask==2.2
+requests
+bs4
+lxml
+googletrans==4.0.0rc1

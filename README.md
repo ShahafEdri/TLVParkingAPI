@@ -1,4 +1,4 @@
-# TLV_Parking_Lots_API
+# TLVParkingAPI
 
 TLV parking lots api is a simple api for getting the current tonnage form ahuzat ha chof parking lots sites.
 data is scraped from [TLV ahuzot website](https://www.ahuzot.co.il/) and its child sites.
